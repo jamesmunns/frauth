@@ -1,18 +1,12 @@
-use ed25519_dalek::{
-    Keypair,
-    Signature,
-};
-use rand::{
-    Rng,
-    rngs::OsRng,
-};
-use serde::{Serialize, Deserialize};
+use ed25519_dalek::{Keypair, Signature};
+use rand::{rngs::OsRng, Rng};
+use serde::{Deserialize, Serialize};
 use serde_json::to_string as ser;
 use serde_json::to_string_pretty as ser_pretty;
-use std::path::Path;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
-use std::collections::HashMap;
+use std::path::Path;
 
 // TODO: Don't use JSON. It doesn't have a canonical format,
 // bad for hashing, okay for prototyping for now
@@ -34,7 +28,10 @@ impl PublicFile {
         out += "\n";
         out += "FRAUTH-SIGNATURE\n";
 
-        self.sig.to_bytes().iter().for_each(|b| out += &format!("{:02X}", b));
+        self.sig
+            .to_bytes()
+            .iter()
+            .for_each(|b| out += &format!("{:02X}", b));
         out += "\n";
         out += "FRAUTH-ENDOFFILE\n";
 
@@ -44,19 +41,13 @@ impl PublicFile {
     pub fn from_public_info(keypair: &Keypair, pinfo: PublicInfo) -> Self {
         let sig = keypair.sign(pinfo.to_file_repr().as_bytes());
 
-        Self {
-            info: pinfo,
-            sig,
-        }
+        Self { info: pinfo, sig }
     }
 }
 
 impl PublicInfo {
     pub fn to_file_repr(&self) -> String {
-        format!(
-            "FRAUTH-CONTENTS\n{}",
-            &(ser_pretty(self).unwrap())
-        )
+        format!("FRAUTH-CONTENTS\n{}", &(ser_pretty(self).unwrap()))
     }
 }
 
@@ -93,12 +84,24 @@ pub(crate) fn new(private_path: &Path) {
         ("twitter".into(), "https://twitter.com/bitshiftmask".into()),
         ("github".into(), "https://github.com/jamesmunns".into()),
         ("email".into(), "james.munns@ferrous-systems.com".into()),
-    ].iter().cloned().collect();
+    ]
+    .iter()
+    .cloned()
+    .collect();
 
     let friends: HashMap<String, String> = [
-        ("Florian Gilcher".into(), "https://yakshav.es/.well-known/frauth.pub".into()),
-        ("Felix Gilcher".into(), "https://felix.yakshav.es/.well-known/frauth.pub".into()),
-    ].iter().cloned().collect();
+        (
+            "Florian Gilcher".into(),
+            "https://yakshav.es/.well-known/frauth.pub".into(),
+        ),
+        (
+            "Felix Gilcher".into(),
+            "https://felix.yakshav.es/.well-known/frauth.pub".into(),
+        ),
+    ]
+    .iter()
+    .cloned()
+    .collect();
 
     let note: String = "Hello, I'm James!".into();
 
@@ -106,18 +109,19 @@ pub(crate) fn new(private_path: &Path) {
         name: "James Munns".into(),
         note,
         identities: idents,
-        friends
+        friends,
     };
 
     // This probably isn't sound
     let pubfilecont = PublicFile::from_public_info(&keypair, pinfo);
 
-
     println!("{}", pubfilecont.to_file_repr());
 
     // TODO: detect if file exists already? Warn?
     let mut ofile = File::create("/home/james/.frauth/frauth.public").unwrap();
-    ofile.write_all(pubfilecont.to_file_repr().as_bytes()).unwrap();
+    ofile
+        .write_all(pubfilecont.to_file_repr().as_bytes())
+        .unwrap();
 
     // println!("\n\n\n\n");
 

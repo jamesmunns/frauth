@@ -1,5 +1,5 @@
-use structopt::StructOpt;
 use std::path::PathBuf;
+use structopt::StructOpt;
 
 mod new;
 
@@ -22,8 +22,7 @@ fn main() {
         SubCommands::New { output_path } => {
             let private = output_path.unwrap_or_else(||
                 // TODO: get home path, figure out canonical path
-                PathBuf::from("/home/james/.frauth/frauth.private")
-            );
+                PathBuf::from("/home/james/.frauth/frauth.private"));
 
             new::new(&private);
         }
