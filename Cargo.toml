@@ -11,6 +11,14 @@ structopt = "0.2"
 async-std = "0.99"
 rand = "0.6"
 serde_json = "1.0"
+toml = "0.5"
+
+[dependencies.base_emoji]
+# TODO: Remove if/when this PR lands and next release happens:
+#   https://github.com/badboy/base-emoji-rs/pull/1/files
+version = "1.0.1"
+git = "https://github.com/jamesmunns/base-emoji-rs.git"
+rev = "add-try-from-str"
 
 [dependencies.ed25519-dalek]
 version = "1.0.0-pre.1"

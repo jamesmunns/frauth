@@ -1,17 +1,58 @@
-use ed25519_dalek::{Keypair, Signature};
+use ed25519_dalek::{Keypair, Signature, PublicKey};
 use rand::{rngs::OsRng, Rng};
-use serde::{Deserialize, Serialize};
-use serde_json::to_string as ser;
-use serde_json::to_string_pretty as ser_pretty;
-use std::collections::HashMap;
+use serde::{Deserialize, Serialize, ser::Serializer};
+use toml::to_string as ser;
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use base_emoji;
+
+#[derive(Deserialize, Debug)]
+struct EmojiSignature(Signature);
+
+#[derive(Deserialize, Debug)]
+struct EmojiPublicKey(PublicKey);
+
+
+impl Serialize for EmojiSignature {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&base_emoji::to_string(&self.0.to_bytes()[..]))
+    }
+}
+
+impl Serialize for EmojiPublicKey {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&base_emoji::to_string(&self.0.to_bytes()[..]))
+    }
+}
+
+impl Serialize for PrivateKey {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&base_emoji::to_string(&self.bytes))
+    }
+}
 
 // TODO: Don't use JSON. It doesn't have a canonical format,
 // bad for hashing, okay for prototyping for now
 
 #[derive(Serialize, Deserialize, Debug)]
+struct FriendInfo {
+    name: String,
+    uri: String,
+    pubkey: EmojiPublicKey,
+}
+
+#[derive(Deserialize, Debug)]
 struct PrivateKey {
     bytes: [u8; 32],
 }
@@ -19,7 +60,7 @@ struct PrivateKey {
 #[derive(Serialize, Deserialize, Debug)]
 struct PublicFile {
     info: PublicInfo,
-    sig: Signature,
+    sig: EmojiSignature,
 }
 
 impl PublicFile {
@@ -28,10 +69,8 @@ impl PublicFile {
         out += "\n";
         out += "FRAUTH-SIGNATURE\n";
 
-        self.sig
-            .to_bytes()
-            .iter()
-            .for_each(|b| out += &format!("{:02X}", b));
+        out += &base_emoji::to_string(&self.sig.0.to_bytes()[..]);
+
         out += "\n";
         out += "FRAUTH-ENDOFFILE\n";
 
@@ -41,13 +80,13 @@ impl PublicFile {
     pub fn from_public_info(keypair: &Keypair, pinfo: PublicInfo) -> Self {
         let sig = keypair.sign(pinfo.to_file_repr().as_bytes());
 
-        Self { info: pinfo, sig }
+        Self { info: pinfo, sig: EmojiSignature(sig) }
     }
 }
 
 impl PublicInfo {
     pub fn to_file_repr(&self) -> String {
-        format!("FRAUTH-CONTENTS\n{}", &(ser_pretty(self).unwrap()))
+        format!("FRAUTH-CONTENTS\n{}", &(ser(self).unwrap()))
     }
 }
 
@@ -55,10 +94,11 @@ impl PublicInfo {
 struct PublicInfo {
     name: String,
     note: String,
+    pubkey: EmojiPublicKey,
 
-    // TODO, URL/URI keys?
-    identities: HashMap<String, String>,
-    friends: HashMap<String, String>,
+    // TODO, URL/URI keys? Probably "raw" vs "internal" formats
+    identities: BTreeMap<String, String>,
+    friends: Vec<FriendInfo>,
 }
 
 pub(crate) fn new(private_path: &Path) {
@@ -74,13 +114,13 @@ pub(crate) fn new(private_path: &Path) {
 
     // TODO: detect if file exists already? Warn?
     let mut ofile = File::create(private_path).unwrap();
-    let serd = ser(&to_out).unwrap();
+    let serd = base_emoji::to_string(&to_out.bytes);
     ofile.write_all(serd.as_bytes()).unwrap();
     ofile.write_all("\n".as_bytes()).unwrap();
 
     //////////
     // Generate personal file
-    let idents: HashMap<String, String> = [
+    let idents: BTreeMap<String, String> = [
         ("twitter".into(), "https://twitter.com/bitshiftmask".into()),
         ("github".into(), "https://github.com/jamesmunns".into()),
         ("email".into(), "james.munns@ferrous-systems.com".into()),
@@ -89,19 +129,23 @@ pub(crate) fn new(private_path: &Path) {
     .cloned()
     .collect();
 
-    let friends: HashMap<String, String> = [
-        (
-            "Florian Gilcher".into(),
-            "https://yakshav.es/.well-known/frauth.pub".into(),
-        ),
-        (
-            "Felix Gilcher".into(),
-            "https://felix.yakshav.es/.well-known/frauth.pub".into(),
-        ),
-    ]
-    .iter()
-    .cloned()
-    .collect();
+    let keys = [
+        Keypair::generate(&mut csprng),
+        Keypair::generate(&mut csprng),
+    ];
+
+    let friends: Vec<FriendInfo> = vec![
+        FriendInfo {
+            name: "Alice Shamir".into(),
+            uri: "https://example.com/.well-known/alice-shamir.frauth".into(),
+            pubkey: EmojiPublicKey(keys[0].public),
+        },
+        FriendInfo {
+            name: "Bob Diffie".into(),
+            uri: "https://beispiel.com/.well-known/bob-diffie.frauth".into(),
+            pubkey: EmojiPublicKey(keys[1].public),
+        },
+    ];
 
     let note: String = "Hello, I'm James!".into();
 
@@ -110,6 +154,7 @@ pub(crate) fn new(private_path: &Path) {
         note,
         identities: idents,
         friends,
+        pubkey: EmojiPublicKey(keypair.public),
     };
 
     // This probably isn't sound
@@ -118,7 +163,7 @@ pub(crate) fn new(private_path: &Path) {
     println!("{}", pubfilecont.to_file_repr());
 
     // TODO: detect if file exists already? Warn?
-    let mut ofile = File::create("/home/james/.frauth/frauth.public").unwrap();
+    let mut ofile = File::create("/home/james/.frauth/james-munns.frauth").unwrap();
     ofile
         .write_all(pubfilecont.to_file_repr().as_bytes())
         .unwrap();
