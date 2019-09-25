@@ -1,105 +1,13 @@
-use ed25519_dalek::{Keypair, Signature, PublicKey};
-use rand::{rngs::OsRng, Rng};
-use serde::{Deserialize, Serialize, ser::Serializer};
-use toml::to_string as ser;
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+
 use base_emoji;
+use ed25519_dalek::Keypair;
+use rand::rngs::OsRng;
 
-#[derive(Deserialize, Debug)]
-struct EmojiSignature(Signature);
-
-#[derive(Deserialize, Debug)]
-struct EmojiPublicKey(PublicKey);
-
-
-impl Serialize for EmojiSignature {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&base_emoji::to_string(&self.0.to_bytes()[..]))
-    }
-}
-
-impl Serialize for EmojiPublicKey {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&base_emoji::to_string(&self.0.to_bytes()[..]))
-    }
-}
-
-impl Serialize for PrivateKey {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&base_emoji::to_string(&self.bytes))
-    }
-}
-
-// TODO: Don't use JSON. It doesn't have a canonical format,
-// bad for hashing, okay for prototyping for now
-
-#[derive(Serialize, Deserialize, Debug)]
-struct FriendInfo {
-    name: String,
-    uri: String,
-    pubkey: EmojiPublicKey,
-}
-
-#[derive(Deserialize, Debug)]
-struct PrivateKey {
-    bytes: [u8; 32],
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct PublicFile {
-    info: PublicInfo,
-    sig: EmojiSignature,
-}
-
-impl PublicFile {
-    pub fn to_file_repr(&self) -> String {
-        let mut out = self.info.to_file_repr();
-        out += "\n";
-        out += "FRAUTH-SIGNATURE\n";
-
-        out += &base_emoji::to_string(&self.sig.0.to_bytes()[..]);
-
-        out += "\n";
-        out += "FRAUTH-ENDOFFILE\n";
-
-        out
-    }
-
-    pub fn from_public_info(keypair: &Keypair, pinfo: PublicInfo) -> Self {
-        let sig = keypair.sign(pinfo.to_file_repr().as_bytes());
-
-        Self { info: pinfo, sig: EmojiSignature(sig) }
-    }
-}
-
-impl PublicInfo {
-    pub fn to_file_repr(&self) -> String {
-        format!("FRAUTH-CONTENTS\n{}", &(ser(self).unwrap()))
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct PublicInfo {
-    name: String,
-    note: String,
-    pubkey: EmojiPublicKey,
-
-    // TODO, URL/URI keys? Probably "raw" vs "internal" formats
-    identities: BTreeMap<String, String>,
-    friends: Vec<FriendInfo>,
-}
+use crate::models::{EmojiPublicKey, FriendInfo, PrivateKey, PublicFile, PublicInfo};
 
 pub(crate) fn new(private_path: &Path) {
     //////////

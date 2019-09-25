@@ -1,6 +1,9 @@
+use models::PublicFile;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
+mod decode;
+mod models;
 mod new;
 
 #[derive(StructOpt, Debug)]
@@ -12,7 +15,10 @@ enum SubCommands {
     },
 
     #[structopt(name = "verify")]
-    Verify,
+    Verify{
+        #[structopt(short = "i")]
+        input_path: Option<PathBuf>,
+    },
 }
 
 fn main() {
@@ -26,8 +32,17 @@ fn main() {
 
             new::new(&private);
         }
-        x @ SubCommands::Verify => {
-            unimplemented!();
+        SubCommands::Verify { input_path } => {
+            let frauth = input_path.unwrap_or_else(||
+                // TODO: get home path, figure out canonical path
+                PathBuf::from("/home/james/.frauth/james-munns.frauth"));
+
+            let file_string = ::std::fs::read_to_string("/home/james/.frauth/james-munns.frauth").unwrap();
+
+            PublicFile::try_from_str(&file_string)
+                .map_err(|x| dbg!(x)).expect("verify failed");
+
+            println!("Successfully verified {:?}.", frauth);
         }
     }
 }
