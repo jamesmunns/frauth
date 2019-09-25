@@ -120,6 +120,18 @@ const HEADER_TOP: &str = "FRAUTH-CONTENTS\n";
 const HEADER_SIGNATURE: &str = "FRAUTH-SIGNATURE\n";
 const HEADER_END_OF_FILE: &str = "FRAUTH-ENDOFFILE\n";
 
+fn assert(me: bool) -> Result<(), ()> {
+    if me {
+        Ok(())
+    } else {
+        Err(())
+    }
+}
+
+fn assert_or<E>(me: bool, err: E) -> Result<(), E> {
+    assert(me).map_err(|_| err)
+}
+
 impl PublicFile {
     pub fn to_file_repr(&self) -> String {
         let mut out = String::new();
@@ -151,22 +163,16 @@ impl PublicFile {
         let lines = input.lines().collect::<Vec<_>>();
 
         // Check 0: There are at least some lines
-        if lines.len() < 2 {
-            dbg!(lines.len());
-            return Err(Error::DecodeLayoutFailure);
-        }
+        assert_or(lines.len() >= 2, Error::DecodeLayoutFailure)?;
 
         // Check 1: Make sure first line is sane
-        if lines[0] != HEADER_TOP.trim() {
-            dbg!(lines[0]);
-            return Err(Error::DecodeLayoutFailure);
-        }
+        assert_or(lines[0] == HEADER_TOP.trim(), Error::DecodeLayoutFailure)?;
 
         // Check 2: Make sure last line is sane
-        if lines[lines.len() - 1] != HEADER_END_OF_FILE.trim() {
-            dbg!(lines[lines.len() - 1]);
-            return Err(Error::DecodeLayoutFailure);
-        }
+        assert_or(
+            lines[lines.len() - 1] == HEADER_END_OF_FILE.trim(),
+            Error::DecodeLayoutFailure,
+        )?;
 
         // Check 3: Make sure only one middle divider
         let lines_body = &lines[1..lines.len()];
@@ -183,70 +189,46 @@ impl PublicFile {
             })
             .collect::<Vec<_>>();
 
-        if dividers.len() != 1 {
-            dbg!(dividers.len());
-            return Err(Error::DecodeLayoutFailure);
-        }
+        assert_or(dividers.len() == 1, Error::DecodeLayoutFailure)?;
 
         let pivot = dividers[0];
 
-        if (pivot == 0) || (pivot == (lines_body.len() - 1)) {
-            dbg!(pivot);
-            dbg!(lines_body.len());
-            return Err(Error::DecodeLayoutFailure);
-        }
+        assert_or(pivot != 0, Error::DecodeLayoutFailure)?;
+        assert_or(pivot != (lines_body.len() - 1), Error::DecodeLayoutFailure)?;
 
         let (toml_body, sig_plus) = lines_body.split_at(pivot);
         let (_hdr, sig_body_lines) = sig_plus.split_at(1);
 
-        if sig_body_lines.len() != 2 {
-            dbg!(sig_body_lines);
-            return Err(Error::DecodeLayoutFailure);
-        }
+        assert_or(sig_body_lines.len() == 2, Error::DecodeLayoutFailure)?;
 
         // Check 4: Make sure signature parses
         let sig_body = sig_body_lines[0];
 
         // TODO: The rest of this check probably should just be serde?
-        let sig_decoded = if let Ok(byte_vec) = base_emoji::try_from_str(&sig_body.trim()) {
-            byte_vec
-        } else {
-            dbg!(":(");
-            return Err(Error::DecodeSignatureFailure);
-        };
+        let sig_decoded = base_emoji::try_from_str(&sig_body.trim())
+            .map_err(|_| Error::DecodeSignatureFailure)?;
 
-        if sig_decoded.len() != ed25519_dalek::SIGNATURE_LENGTH {
-            dbg!(sig_decoded.len());
-            return Err(Error::DecodeSignatureFailure);
-        }
+        assert_or(
+            sig_decoded.len() == ed25519_dalek::SIGNATURE_LENGTH,
+            Error::DecodeSignatureFailure,
+        )?;
 
-        let signature = if let Ok(sig) = ed25519_dalek::Signature::from_bytes(sig_decoded.as_ref())
-        {
-            sig
-        } else {
-            dbg!(":((");
-            return Err(Error::DecodeSignatureFailure);
-        };
+        let signature = ed25519_dalek::Signature::from_bytes(sig_decoded.as_ref())
+            .map_err(|_| Error::DecodeSignatureFailure)?;
 
         // Check 5: Make sure toml de-tomls
         let combined = toml_body.join("\n");
-        let pub_info: PublicInfo = if let Ok(toml) = toml::from_str(&combined).map_err(|x| dbg!(x))
-        {
-            toml
-        } else {
-            dbg!(combined);
-            return dbg!(Err(Error::DecodeTomlFailure));
-        };
+        let pub_info: PublicInfo =
+            toml::from_str(&combined).map_err(|_x| Error::DecodeTomlFailure)?;
 
         // Check 6: Make sure toml matches signature
-        if pub_info
+        let good_sig = pub_info
             .pubkey
             .0
             .verify(pub_info.to_file_repr().as_bytes(), &signature)
-            .is_err()
-        {
-            return dbg!(Err(Error::DecodeSignatureFailure));
-        }
+            .is_ok();
+
+        assert_or(good_sig, Error::DecodeSignatureFailure)?;
 
         Ok(Self {
             info: pub_info,

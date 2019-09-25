@@ -15,7 +15,7 @@ enum SubCommands {
     },
 
     #[structopt(name = "verify")]
-    Verify{
+    Verify {
         #[structopt(short = "i")]
         input_path: Option<PathBuf>,
     },
@@ -37,10 +37,12 @@ fn main() {
                 // TODO: get home path, figure out canonical path
                 PathBuf::from("/home/james/.frauth/james-munns.frauth"));
 
-            let file_string = ::std::fs::read_to_string("/home/james/.frauth/james-munns.frauth").unwrap();
+            let file_string =
+                ::std::fs::read_to_string("/home/james/.frauth/james-munns.frauth").unwrap();
 
             PublicFile::try_from_str(&file_string)
-                .map_err(|x| dbg!(x)).expect("verify failed");
+                .map_err(|x| dbg!(x))
+                .expect("verify failed");
 
             println!("Successfully verified {:?}.", frauth);
         }
