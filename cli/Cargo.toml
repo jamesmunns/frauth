@@ -1,0 +1,17 @@
+[package]
+name = "frauth-cli"
+version = "0.1.0"
+authors = ["James Munns <james.munns@ferrous-systems.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+structopt = "0.3.7"
+serde = { version = "1.0.104", features = ["derive"] }
+directories = "2.0.2"
+lazy_static = "1.4.0"
+dialoguer = "0.5.0"
+ed25519-dalek = { version = "1.0.0-pre.3", features = ["serde"] }
+rand = "0.7.3"
+toml = "0.5.5"

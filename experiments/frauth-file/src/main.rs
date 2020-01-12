@@ -5,6 +5,7 @@ use structopt::StructOpt;
 mod decode;
 mod models;
 mod new;
+mod web;
 
 #[derive(StructOpt, Debug)]
 enum SubCommands {
