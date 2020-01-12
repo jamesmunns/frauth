@@ -114,6 +114,7 @@ pub enum Error {
     DecodeLayoutFailure,
     DecodeTomlFailure,
     DecodeSignatureFailure,
+    DecodeVerificationFailure,
 }
 
 const HEADER_TOP: &str = "FRAUTH-CONTENTS\n";
@@ -160,10 +161,19 @@ impl PublicFile {
     }
 
     pub fn try_from_str(input: &str) -> Result<Self, Error> {
+        // TODO: This could probably be done in a way more efficient way
+        // that doesn't require splitting the content into lines and collecting
+        // them and recombining them. But that isn't a big deal for now
+
         let lines = input.lines().collect::<Vec<_>>();
 
-        // Check 0: There are at least some lines
-        assert_or(lines.len() >= 2, Error::DecodeLayoutFailure)?;
+        // Check 0: There are at least some lines. We need at least:
+        // * A top header
+        // * At least one body line
+        // * A signature header
+        // * A signature
+        // * An End of File footer
+        assert_or(lines.len() >= 5, Error::DecodeLayoutFailure)?;
 
         // Check 1: Make sure first line is sane
         assert_or(lines[0] == HEADER_TOP.trim(), Error::DecodeLayoutFailure)?;
@@ -200,6 +210,7 @@ impl PublicFile {
         let (_hdr, sig_body_lines) = sig_plus.split_at(1);
 
         assert_or(sig_body_lines.len() == 2, Error::DecodeLayoutFailure)?;
+        assert_or(toml_body.len() >= 1, Error::DecodeLayoutFailure)?;
 
         // Check 4: Make sure signature parses
         let sig_body = sig_body_lines[0];
@@ -225,10 +236,10 @@ impl PublicFile {
         let good_sig = pub_info
             .pubkey
             .0
-            .verify(pub_info.to_file_repr().as_bytes(), &signature)
+            .verify(combined.as_bytes(), &signature)
             .is_ok();
 
-        assert_or(good_sig, Error::DecodeSignatureFailure)?;
+        assert_or(good_sig, Error::DecodeVerificationFailure)?;
 
         Ok(Self {
             info: pub_info,

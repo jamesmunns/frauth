@@ -44,14 +44,14 @@ pub(crate) fn new(private_path: &Path) {
 
     let friends: Vec<FriendInfo> = vec![
         FriendInfo {
-            name: "Alice Shamir".into(),
-            uri: "https://example.com/.well-known/alice-shamir.frauth".into(),
-            pubkey: EmojiPublicKey(keys[0].public),
-        },
-        FriendInfo {
             name: "Bob Diffie".into(),
             uri: "https://beispiel.com/.well-known/bob-diffie.frauth".into(),
             pubkey: EmojiPublicKey(keys[1].public),
+        },
+        FriendInfo {
+            name: "Alice Shamir".into(),
+            uri: "https://example.com/.well-known/alice-shamir.frauth".into(),
+            pubkey: EmojiPublicKey(keys[0].public),
         },
     ];
 

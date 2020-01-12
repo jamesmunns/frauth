@@ -21,9 +21,7 @@ features = ["std"]
 [dependencies.base_emoji]
 # TODO: Remove if/when this PR lands and next release happens:
 #   https://github.com/badboy/base-emoji-rs/pull/1/files
-version = "1.0.1"
-git = "https://github.com/jamesmunns/base-emoji-rs.git"
-rev = "add-try-from-str"
+version = "1.1.0"
 
 [dependencies.ed25519-dalek]
 version = "1.0.0-pre.1"
