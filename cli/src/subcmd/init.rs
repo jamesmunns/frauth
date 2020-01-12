@@ -7,12 +7,12 @@ use std::collections::HashMap;
 use rand::rngs::OsRng;
 use crate::schema::UserInfo;
 use ed25519_dalek::Keypair;
-use std::fs::{File, create_dir_all, OpenOptions};
+use std::fs::{create_dir_all, OpenOptions};
 use toml::to_string;
 use std::io::Write;
 
 #[cfg(unix)]
-use std::os::unix::fs::PermissionsExt;
+use std::os::unix::fs::OpenOptionsExt;
 
 pub fn init() -> Result<()> {
     println!("Welcome to frauth!");
@@ -43,8 +43,17 @@ pub fn init() -> Result<()> {
     opt.truncate(true);
     opt.create(true);
 
+    #[cfg(unix)]
+    opt.mode(0o600);
+
+    // TODO: Figure out how file permissions work on Windows, or link to an issue
+    #[cfg(not(unix))]
+    eprintln!(
+        "Warning! You should set the permissions for {} to only be readable by this user!"
+        PATHS.user_info.display()
+    );
+
     let mut file = opt.open(&PATHS.user_info)?;
-    set_permissions(&mut file)?;
 
     println!("Done.");
 
@@ -109,24 +118,6 @@ pub fn init() -> Result<()> {
 
     // TODO: add next steps, like using `frauth me`
 
-    Ok(())
-}
-
-#[cfg(unix)]
-fn set_permissions(file: &mut File) -> Result<()> {
-    let metadata = file.metadata()?;
-    let mut permissions = metadata.permissions();
-    permissions.set_mode(0o600);
-    Ok(())
-}
-
-#[cfg(not(unix))]
-fn set_permissions(file: &mut File) -> Result<()> {
-    // TODO: Figure out how file permissions work on Windows, or link to an issue
-    eprintln!(
-        "Warning! You should set the permissions for {} to only be readable by this user!"
-        PATHS.user_info.display()
-    );
     Ok(())
 }
 
