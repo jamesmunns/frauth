@@ -1,6 +1,7 @@
-use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
+
 use ed25519_dalek::Keypair;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserInfo {

@@ -1,10 +1,11 @@
-use structopt::StructOpt;
-use lazy_static::lazy_static;
-use directories::ProjectDirs;
 use std::path::PathBuf;
 
-pub mod subcmd;
+use directories::ProjectDirs;
+use lazy_static::lazy_static;
+use structopt::StructOpt;
+
 pub mod schema;
+pub mod subcmd;
 
 pub type Error = Box<dyn std::error::Error>;
 pub type Result<T> = std::result::Result<T, Error>;
@@ -18,15 +19,10 @@ pub(crate) struct Paths {
     network: PathBuf,
 }
 
-lazy_static!{
+lazy_static! {
     pub(crate) static ref PATHS: Paths = {
-        let project_dirs = ProjectDirs::from(
-            "com",
-            "Frauth",
-            "frauth-cli"
-        ).unwrap_or_else(|| {
-            bail("Failed to find a suitable home/config directory!")
-        });
+        let project_dirs = ProjectDirs::from("com", "Frauth", "frauth-cli")
+            .unwrap_or_else(|| bail("Failed to find a suitable home/config directory!"));
 
         let base_data = project_dirs.data_dir();
         let base_cache = project_dirs.cache_dir();
@@ -50,7 +46,7 @@ lazy_static!{
 #[structopt(rename_all = "kebab-case")]
 enum SubCommands {
     /// Initialize frauth, creating keys and necessary directories
-    Init
+    Init,
 }
 
 fn main() -> Result<()> {
@@ -59,9 +55,7 @@ fn main() -> Result<()> {
     println!("{:#?}", &*PATHS);
 
     match opt {
-        SubCommands::Init => {
-            subcmd::init::init()
-        }
+        SubCommands::Init => subcmd::init::init(),
     }
 }
 

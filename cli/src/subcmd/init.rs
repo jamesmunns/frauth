@@ -1,23 +1,26 @@
-use dialoguer::{
-    Confirmation,
-    Input,
+use std::{
+    collections::HashMap,
+    fs::{create_dir_all, OpenOptions},
+    io::Write,
 };
-use crate::{Result, Error, PATHS};
-use std::collections::HashMap;
-use rand::rngs::OsRng;
-use crate::schema::UserInfo;
-use ed25519_dalek::Keypair;
-use std::fs::{create_dir_all, OpenOptions};
-use toml::to_string;
-use std::io::Write;
 
 #[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
 
+use dialoguer::{Confirmation, Input};
+use ed25519_dalek::Keypair;
+use rand::rngs::OsRng;
+use toml::to_string;
+
+use crate::{schema::UserInfo, Error, Result, PATHS};
+
 pub fn init() -> Result<()> {
     println!("Welcome to frauth!");
 
-    if !Confirmation::new().with_text("Ready to get started?").interact()? {
+    if !Confirmation::new()
+        .with_text("Ready to get started?")
+        .interact()?
+    {
         return Err(Error::from("Halting init"));
     }
 
@@ -27,7 +30,11 @@ pub fn init() -> Result<()> {
         println!("\nIt looks like you've already initialized frauth.");
         println!("Do you want to re-initialize? THIS WILL ERASE YOUR EXISTING KEYS AND DATA!");
 
-        if !Confirmation::new().default(false).with_text("Continue?").interact()? {
+        if !Confirmation::new()
+            .default(false)
+            .with_text("Continue?")
+            .interact()?
+        {
             return Err(Error::from("Halting init"));
         }
     }
@@ -59,7 +66,9 @@ pub fn init() -> Result<()> {
 
     println!("\nOkay! We'll get started by collecting some required info.");
 
-    let name = Input::<String>::new().with_prompt("What name do you want to go by?").interact()?;
+    let name = Input::<String>::new()
+        .with_prompt("What name do you want to go by?")
+        .interact()?;
 
     println!("\nOkay, that's everything that's required. Now let's collect some optional items.");
 
@@ -72,7 +81,10 @@ pub fn init() -> Result<()> {
     let mut identities: HashMap<String, String> = HashMap::new();
 
     loop {
-        if !Confirmation::new().with_text("\nAdd/Update an identity?").interact()? {
+        if !Confirmation::new()
+            .with_text("\nAdd/Update an identity?")
+            .interact()?
+        {
             break;
         }
 
@@ -91,13 +103,12 @@ pub fn init() -> Result<()> {
 
     let mut status = None;
 
-    if Confirmation::new().with_text("\nAdd a status?").interact()? {
+    if Confirmation::new()
+        .with_text("\nAdd a status?")
+        .interact()?
+    {
         // TODO: Use an editor instead, limit the character length
-        status = Some(
-            Input::<String>::new()
-                .with_prompt("\nStatus")
-                .interact()?
-        );
+        status = Some(Input::<String>::new().with_prompt("\nStatus").interact()?);
     }
 
     let keypair = Keypair::generate(&mut OsRng);
@@ -106,7 +117,7 @@ pub fn init() -> Result<()> {
         name,
         identities,
         status,
-        keypair
+        keypair,
     };
 
     let contents = to_string(&user_info)?;
