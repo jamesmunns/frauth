@@ -3,8 +3,16 @@ use lazy_static::lazy_static;
 use directories::ProjectDirs;
 use std::path::PathBuf;
 
+pub mod subcmd;
+pub mod schema;
+
+pub type Error = Box<dyn std::error::Error>;
+pub type Result<T> = std::result::Result<T, Error>;
+
 #[derive(Debug)]
 pub(crate) struct Paths {
+    base_data: PathBuf,
+    base_cache: PathBuf,
     user_info: PathBuf,
     known_db: PathBuf,
     network: PathBuf,
@@ -24,6 +32,8 @@ lazy_static!{
         let base_cache = project_dirs.cache_dir();
 
         Paths {
+            base_data: base_data.into(),
+            base_cache: base_cache.into(),
             user_info: base_data.join("me.frauth"),
             known_db: base_data.join("known.frauth"),
             network: base_cache.join("network.frauth"),
@@ -43,14 +53,14 @@ enum SubCommands {
     Init
 }
 
-fn main() {
+fn main() -> Result<()> {
     let opt = SubCommands::from_args();
 
     println!("{:#?}", &*PATHS);
 
     match opt {
         SubCommands::Init => {
-            unimplemented!()
+            subcmd::init::init()
         }
     }
 }
