@@ -9,9 +9,9 @@ use structopt::StructOpt;
 use toml::{from_str, to_string};
 
 use crate::{
-    schema::{PublishUserInfo, UserInfo, PublishFriend},
-    Result, PATHS,
+    schema::{PublishFriend, PublishUserInfo, UserInfo},
     util::load_friends,
+    Result, PATHS,
 };
 
 pub const HEADER_TOP: &str = "FRAUTH-CONTENTS\n";
@@ -60,7 +60,10 @@ fn render_to_string(mut user_info: UserInfo) -> Result<String> {
     let pub_friends = friends
         .map
         .iter()
-        .map(|(uri, friend)| PublishFriend { uri: uri.to_string(), pubkey: friend.info.pubkey.to_string() })
+        .map(|(uri, friend)| PublishFriend {
+            uri: uri.to_string(),
+            pubkey: friend.info.pubkey.to_string(),
+        })
         .collect();
 
     let pub_info = PublishUserInfo {

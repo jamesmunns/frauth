@@ -4,13 +4,12 @@ use directories::ProjectDirs;
 use lazy_static::lazy_static;
 use structopt::StructOpt;
 
-use crate::subcmd::friend::FriendOpts;
-use crate::subcmd::publish::PublishOpts;
+use crate::subcmd::{friend::FriendOpts, publish::PublishOpts};
 
+pub mod consts;
 pub mod schema;
 pub mod subcmd;
 pub mod util;
-pub mod consts;
 
 pub type Error = Box<dyn std::error::Error>;
 pub type Result<T> = std::result::Result<T, Error>;

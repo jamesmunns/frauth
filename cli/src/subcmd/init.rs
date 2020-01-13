@@ -12,9 +12,10 @@ use rand::rngs::OsRng;
 use toml::to_string;
 
 use crate::{
-    schema::{UserInfo, Friends, Peers}, Error, Result, PATHS,
-    consts::{USER_INFO_HEADER, PEER_INFO_HEADER, FRIEND_INFO_HEADER},
+    consts::{FRIEND_INFO_HEADER, PEER_INFO_HEADER, USER_INFO_HEADER},
+    schema::{Friends, Peers, UserInfo},
     util::create_private_file,
+    Error, Result, PATHS,
 };
 
 pub fn init() -> Result<()> {
@@ -129,7 +130,3 @@ pub fn init() -> Result<()> {
 
     Ok(())
 }
-
-
-
-

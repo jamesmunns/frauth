@@ -1,17 +1,20 @@
-use crate::schema::{PublishUserInfo, Friends, FriendInfo};
-use crate::subcmd::publish::{HEADER_END_OF_FILE, HEADER_SIGNATURE, HEADER_TOP};
-use crate::{Error, Result, PATHS};
-use crate::consts::FRIEND_INFO_HEADER;
-use crate::util::{create_private_file, load_friends};
+use std::{fs::read_to_string, io::Write};
+
 use async_std::task;
 use base64::decode;
+use dialoguer::Input;
 use ed25519_dalek::PublicKey;
 use structopt::StructOpt;
 use surf::get;
-use std::fs::read_to_string;
 use toml::{from_str, to_string};
-use std::io::Write;
-use dialoguer::Input;
+
+use crate::{
+    consts::FRIEND_INFO_HEADER,
+    schema::{FriendInfo, Friends, PublishUserInfo},
+    subcmd::publish::{HEADER_END_OF_FILE, HEADER_SIGNATURE, HEADER_TOP},
+    util::{create_private_file, load_friends},
+    {Error, Result, PATHS},
+};
 
 #[derive(StructOpt, Debug)]
 #[structopt(rename_all = "kebab-case")]
@@ -61,7 +64,10 @@ fn add(url: &str, mut friends: Friends) -> Result<()> {
         return Err(Error::from("Friend already known!"));
     }
 
-    print!("\nPlease enter `{}`'s public key. You should ask them for it via a separate", url);
+    print!(
+        "\nPlease enter `{}`'s public key. You should ask them for it via a separate",
+        url
+    );
     println!(" route, such as a private message, email, or text message.");
 
     println!("\nThey can print their public key on their PC with the command `frauth pubkey`.");
@@ -79,7 +85,9 @@ fn add(url: &str, mut friends: Friends) -> Result<()> {
         return Err(Error::from("public key mismatch"));
     }
 
-    friends.map.insert(url.to_string(), FriendInfo { info: pub_info });
+    friends
+        .map
+        .insert(url.to_string(), FriendInfo { info: pub_info });
 
     save_friends(&friends)?;
 

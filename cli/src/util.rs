@@ -1,11 +1,11 @@
 use std::{
-    fs::{OpenOptions, File, read_to_string},
+    fs::{read_to_string, File, OpenOptions},
     path::Path,
 };
-use crate::{Result, Error};
+
 use toml::from_str;
-use crate::schema::Friends;
-use crate::PATHS;
+
+use crate::{schema::Friends, Error, Result, PATHS};
 
 #[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
