@@ -23,3 +23,9 @@ rand = "0.7.3"
 serde = { version = "1.0.104", features = ["derive"] }
 structopt = "0.3.7"
 toml = "0.5.5"
+async-std = { version = "1.4.0", features = ["unstable"] }
+
+[dependencies.surf]
+version = "1.0"
+git = "https://github.com/http-rs/surf"
+rev = "516554b26194e24193f1a7ebbc320feb6f4c2fc8"

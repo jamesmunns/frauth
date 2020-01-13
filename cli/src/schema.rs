@@ -11,27 +11,27 @@ pub struct UserInfo {
     pub identities: HashMap<String, String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Friends {
-    map: BTreeMap<String, FriendInfo>,
+    pub map: BTreeMap<String, FriendInfo>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FriendInfo {
     // TODO: Last Checked
-    info: UserInfo,
+    pub info: PublishUserInfo,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Peers {
-    map: BTreeMap<String, FriendInfo>,
+    pub map: BTreeMap<String, FriendInfo>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PeerInfo {
     // TODO: Last Checked
-    info: UserInfo,
-    score: f64,
+    pub info: PublishUserInfo,
+    pub score: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -45,7 +45,6 @@ pub struct PublishUserInfo {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PublishFriend {
-    pub name: String,
     pub uri: String,
     pub pubkey: String,
 }

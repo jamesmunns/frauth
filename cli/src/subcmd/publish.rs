@@ -9,13 +9,14 @@ use structopt::StructOpt;
 use toml::{from_str, to_string};
 
 use crate::{
-    schema::{PublishUserInfo, UserInfo},
+    schema::{PublishUserInfo, UserInfo, PublishFriend},
     Result, PATHS,
+    util::load_friends,
 };
 
-const HEADER_TOP: &str = "FRAUTH-CONTENTS\n";
-const HEADER_SIGNATURE: &str = "FRAUTH-SIGNATURE\n";
-const HEADER_END_OF_FILE: &str = "FRAUTH-ENDOFFILE\n";
+pub const HEADER_TOP: &str = "FRAUTH-CONTENTS\n";
+pub const HEADER_SIGNATURE: &str = "FRAUTH-SIGNATURE\n";
+pub const HEADER_END_OF_FILE: &str = "FRAUTH-ENDOFFILE\n";
 
 #[derive(StructOpt, Debug)]
 #[structopt(rename_all = "kebab-case")]
@@ -55,12 +56,19 @@ fn load_user_file() -> Result<UserInfo> {
 }
 
 fn render_to_string(mut user_info: UserInfo) -> Result<String> {
+    let friends = load_friends()?;
+    let pub_friends = friends
+        .map
+        .iter()
+        .map(|(uri, friend)| PublishFriend { uri: uri.to_string(), pubkey: friend.info.pubkey.to_string() })
+        .collect();
+
     let pub_info = PublishUserInfo {
         name: user_info.name,
         status: user_info.status,
         pubkey: encode(user_info.keypair.public.as_bytes()),
         identities: user_info.identities.drain().collect(),
-        friends: vec![], // TODO - sorted
+        friends: pub_friends,
     };
 
     let toml_contents = to_string(&pub_info)?;

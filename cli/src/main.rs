@@ -4,10 +4,13 @@ use directories::ProjectDirs;
 use lazy_static::lazy_static;
 use structopt::StructOpt;
 
+use crate::subcmd::friend::FriendOpts;
 use crate::subcmd::publish::PublishOpts;
 
 pub mod schema;
 pub mod subcmd;
+pub mod util;
+pub mod consts;
 
 pub type Error = Box<dyn std::error::Error>;
 pub type Result<T> = std::result::Result<T, Error>;
@@ -17,8 +20,8 @@ pub(crate) struct Paths {
     base_data: PathBuf,
     base_cache: PathBuf,
     user_info: PathBuf,
-    known_db: PathBuf,
-    network: PathBuf,
+    friend_info: PathBuf,
+    peer_info: PathBuf,
 }
 
 lazy_static! {
@@ -33,8 +36,8 @@ lazy_static! {
             base_data: base_data.into(),
             base_cache: base_cache.into(),
             user_info: base_data.join("me.frauth"),
-            known_db: base_data.join("known.frauth"),
-            network: base_cache.join("network.frauth"),
+            friend_info: base_data.join("known.frauth"),
+            peer_info: base_cache.join("peer.frauth"),
         }
     };
 }
@@ -52,15 +55,23 @@ enum SubCommands {
 
     /// Render a file that can be placed on a static website
     Publish(PublishOpts),
+
+    /// Operations around your friend list
+    Friend(FriendOpts),
 }
 
 fn main() -> Result<()> {
     let opt = SubCommands::from_args();
 
-    match opt {
+    let ret = match opt {
         SubCommands::Init => subcmd::init::init(),
         SubCommands::Publish(opts) => subcmd::publish::publish(&opts),
-    }
+        SubCommands::Friend(opts) => subcmd::friend::friend(&opts),
+    };
+
+    println!();
+
+    ret
 }
 
 pub fn bail(reason: &str) -> ! {
