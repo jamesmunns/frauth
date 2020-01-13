@@ -7,6 +7,7 @@ license = "GPL-3.0"
 description = "The frauth CLI tool"
 repository = "https://github.com/jamesmunns/frauth"
 homepage = "https://github.com/jamesmunns/frauth"
+readme = "../README.md"
 
 [[bin]]
 name = "frauth"
