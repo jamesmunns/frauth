@@ -101,15 +101,15 @@ pub fn init() -> Result<()> {
 
     println!("\nWould you like to add a public status message? You can change or add this later as well.");
 
-    let mut status = None;
-
-    if Confirmation::new()
+    let status = if Confirmation::new()
         .with_text("\nAdd a status?")
         .interact()?
     {
         // TODO: Use an editor instead, limit the character length
-        status = Some(Input::<String>::new().with_prompt("\nStatus").interact()?);
-    }
+        Some(Input::<String>::new().with_prompt("\nStatus").interact()?)
+    } else {
+        None
+    };
 
     let keypair = Keypair::generate(&mut OsRng);
 

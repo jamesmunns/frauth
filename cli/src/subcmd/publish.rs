@@ -1,13 +1,17 @@
-use crate::{Result, PATHS};
-use crate::schema::{UserInfo, PublishUserInfo};
-use toml::{from_str, to_string};
-use std::fs::read_to_string;
-use base64::encode;
-use std::path::PathBuf;
-use structopt::StructOpt;
-use std::fs::OpenOptions;
-use std::io::Write;
+use std::{
+    fs::{read_to_string, OpenOptions},
+    io::Write,
+    path::PathBuf,
+};
 
+use base64::encode;
+use structopt::StructOpt;
+use toml::{from_str, to_string};
+
+use crate::{
+    schema::{PublishUserInfo, UserInfo},
+    Result, PATHS,
+};
 
 const HEADER_TOP: &str = "FRAUTH-CONTENTS\n";
 const HEADER_SIGNATURE: &str = "FRAUTH-SIGNATURE\n";
@@ -18,7 +22,7 @@ const HEADER_END_OF_FILE: &str = "FRAUTH-ENDOFFILE\n";
 pub struct PublishOpts {
     /// File to output to. If omitted, the file will be output to stdout
     #[structopt(short = "o", long = "output")]
-    output: Option<PathBuf>
+    output: Option<PathBuf>,
 }
 
 pub fn publish(opts: &PublishOpts) -> Result<()> {
@@ -50,13 +54,13 @@ fn load_user_file() -> Result<UserInfo> {
         .map_err(|_| "Failed to parse user info!".into())
 }
 
-fn render_to_string(user_info: UserInfo) -> Result<String> {
+fn render_to_string(mut user_info: UserInfo) -> Result<String> {
     let pub_info = PublishUserInfo {
         name: user_info.name,
         status: user_info.status,
         pubkey: encode(user_info.keypair.public.as_bytes()),
-        identities: user_info.identities,
-        friends: vec![], // TODO
+        identities: user_info.identities.drain().collect(),
+        friends: vec![], // TODO - sorted
     };
 
     let toml_contents = to_string(&pub_info)?;
