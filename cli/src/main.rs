@@ -4,6 +4,8 @@ use directories::ProjectDirs;
 use lazy_static::lazy_static;
 use structopt::StructOpt;
 
+use crate::subcmd::publish::PublishOpts;
+
 pub mod schema;
 pub mod subcmd;
 
@@ -47,15 +49,17 @@ lazy_static! {
 enum SubCommands {
     /// Initialize frauth, creating keys and necessary directories
     Init,
+
+    /// Render a file that can be placed on a static website
+    Publish(PublishOpts),
 }
 
 fn main() -> Result<()> {
     let opt = SubCommands::from_args();
 
-    println!("{:#?}", &*PATHS);
-
     match opt {
         SubCommands::Init => subcmd::init::init(),
+        SubCommands::Publish(opts) => subcmd::publish::publish(&opts),
     }
 }
 

@@ -1,0 +1,3 @@
+[submodule "vendor/ed25519-dalek"]
+	path = vendor/ed25519-dalek
+	url = git@github.com:dalek-cryptography/ed25519-dalek.git

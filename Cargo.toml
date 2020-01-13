@@ -2,4 +2,12 @@
 
 members = [
     "cli",
+    "experiments/dalek-test",
+    "vendor/ed25519-dalek",
 ]
+
+# Patch to correct deserialization behavior of `Keypair`s.
+# See https://github.com/dalek-cryptography/ed25519-dalek/pull/112
+[patch.crates-io.ed25519-dalek]
+git = "https://github.com/jamesmunns/ed25519-dalek"
+rev = "3d9d11dcdf64a27b8c2fa7f5cdb0fcbff415d0d6"
