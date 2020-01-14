@@ -44,7 +44,20 @@ This section will be rewritten later once I have more time. For now:
     * Usually you call this file `me.frauth`.
     * My identity lives at `https://jamesmunns.com/me.frauth`.
 
-In the future, you will be able to do stuff like add friends, discover friends, sign/verify/encrypt/decrypt messages and files, or more.
+In the future, you will be able to do stuff like discover friends, sign/verify/encrypt/decrypt messages and files, or more.
+
+## TL;DR Commands
+
+> Note: You can use `--help` at any level to get more information
+
+* `frauth`
+    * `frauth init` - Set up frauth on first use
+    * `frauth friend` - Actions around verified friends
+        * `frauth friend add <url>` - Add a friend by their published URL
+        * `frauth friend list [--detailed]` - List all of your friends (and their info)
+        * `frauth friend remove <url>` - Remove a friend by their published URL
+        * `frauth friend update <url>` - Update information from a friend
+    * `frauth publish [--output PATH]` - Create a plain text file you can host on a static site
 
 ## Contributing
 

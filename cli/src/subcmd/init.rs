@@ -1,10 +1,4 @@
-use std::{
-    collections::HashMap,
-    default::Default,
-    fs::{create_dir_all, File, OpenOptions},
-    io::Write,
-    path::Path,
-};
+use std::{collections::HashMap, default::Default, fs::create_dir_all, io::Write};
 
 use dialoguer::{Confirmation, Input};
 use ed25519_dalek::Keypair;

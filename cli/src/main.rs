@@ -68,7 +68,9 @@ fn main() -> Result<()> {
         SubCommands::Friend(opts) => subcmd::friend::friend(&opts),
     };
 
-    println!();
+    if ret.is_err() {
+        println!();
+    }
 
     ret
 }
