@@ -60,9 +60,15 @@ fn render_to_string(mut user_info: UserInfo) -> Result<String> {
     let pub_friends = friends
         .map
         .iter()
-        .map(|(uri, friend)| PublishFriend {
-            uri: uri.to_string(),
-            pubkey: friend.info.pubkey.to_string(),
+        .filter_map(|(uri, friend)| {
+            if friend.public {
+                Some(PublishFriend {
+                    uri: uri.to_string(),
+                    pubkey: friend.info.pubkey.to_string(),
+                })
+            } else {
+                None
+            }
         })
         .collect();
 
