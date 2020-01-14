@@ -20,7 +20,7 @@ Frauth does not aim to be configurable with regards to cryptography, instead sel
 For early releases, you must build `frauth` from source. `frauth` is written in Rust. You can install from source in one of two ways:
 
 * Run `cargo install frauth`, OR
-* Clone this repo with submodules (e.g. `git clone --recursive https://github.com/jamesmunns/frauth.git`), and run `cargo install --path .`
+* Clone this repo with submodules (e.g. `git clone --recursive https://github.com/jamesmunns/frauth.git`), and run `cargo install --path .` in the `cli` directory
 
 In the future, binaries will be provided. `frauth` should work on any major OS.
 
