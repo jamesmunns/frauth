@@ -22,7 +22,7 @@ pub fn create_private_file(path: &Path) -> Result<File> {
     // TODO: Figure out how file permissions work on Windows, or link to an issue
     #[cfg(not(unix))]
     eprintln!(
-        "Warning! You should set the permissions for {} to only be readable by this user!"
+        "Warning! You should set the permissions for {} to only be readable by this user!",
         PATHS.user_info.display()
     );
 
