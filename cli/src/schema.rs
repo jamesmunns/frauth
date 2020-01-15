@@ -41,6 +41,10 @@ pub struct PublishUserInfo {
     pub name: String,
     pub status: Option<String>,
     pub pubkey: String,
+
+    // TODO: Reconsider if this should be optional on the next breaking
+    // release. For now keep for 0.2.x compatibility
+    pub last_updated: Option<DateTime<Utc>>,
     pub friends: Vec<PublishFriend>,
     pub identities: BTreeMap<String, String>,
 }

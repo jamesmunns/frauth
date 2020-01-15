@@ -5,6 +5,7 @@ use std::{
 };
 
 use base64::encode;
+use chrono::Utc;
 use structopt::StructOpt;
 use toml::{from_str, to_string};
 
@@ -76,6 +77,7 @@ fn render_to_string(mut user_info: UserInfo) -> Result<String> {
         name: user_info.name,
         status: user_info.status,
         pubkey: encode(user_info.keypair.public.as_bytes()),
+        last_updated: Some(Utc::now()),
         identities: user_info.identities.drain().collect(),
         friends: pub_friends,
     };
