@@ -1,6 +1,6 @@
 [package]
 name = "frauth"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["James Munns <james.munns@ferrous-systems.com>"]
 edition = "2018"
 license = "GPL-3.0"
@@ -21,19 +21,14 @@ lazy_static = "1.4.0"
 rand = "0.7.3"
 serde = { version = "1.0.104", features = ["derive"] }
 structopt = "0.3.7"
+surf = "1.0.3"
 toml = "0.5.5"
 async-std = { version = "1.4.0", features = ["unstable"] }
 chrono = { version = "0.4.10", features = ["serde"] }
 
-[dependencies.surf]
-version = "1.0"
-git = "https://github.com/http-rs/surf"
-rev = "516554b26194e24193f1a7ebbc320feb6f4c2fc8"
-
 [dependencies.ed25519-dalek]
 # Patch to correct deserialization behavior of `Keypair`s.
 # See https://github.com/dalek-cryptography/ed25519-dalek/pull/112
+package = "frauth-ed25519-dalek"
 version = "1.0.0-pre.3"
 features = ["serde"]
-git = "https://github.com/jamesmunns/ed25519-dalek"
-rev = "3d9d11dcdf64a27b8c2fa7f5cdb0fcbff415d0d6"
