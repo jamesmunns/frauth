@@ -52,6 +52,9 @@ enum SubCommands {
     /// Initialize frauth, creating keys and necessary directories
     Init,
 
+    /// Modify your own config
+    Me,
+
     /// Render a file that can be placed on a static website
     Publish(PublishOpts),
 
@@ -64,6 +67,7 @@ fn main() -> Result<()> {
 
     let ret = match opt {
         SubCommands::Init => subcmd::init::init(),
+        SubCommands::Me => subcmd::me::me(),
         SubCommands::Publish(opts) => subcmd::publish::publish(&opts),
         SubCommands::Friend(opts) => subcmd::friend::friend(&opts),
     };
