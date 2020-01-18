@@ -6,9 +6,9 @@ use rand::rngs::OsRng;
 use toml::to_string;
 
 use crate::{
-    consts::{FRIEND_INFO_HEADER, PEER_INFO_HEADER, USER_INFO_HEADER},
+    consts::{FRIEND_INFO_HEADER, PEER_INFO_HEADER},
     schema::{Friends, Peers, UserInfo},
-    util::create_private_file,
+    util::{create_private_file, write_user_info},
     Error, Result, PATHS,
 };
 
@@ -43,7 +43,7 @@ pub fn init() -> Result<()> {
     create_dir_all(&PATHS.base_cache)?;
 
     // Create files early to prevent late errors
-    let mut user_info_file = create_private_file(&PATHS.user_info)?;
+    let _ = create_private_file(&PATHS.user_info)?;
     let mut friend_info_file = create_private_file(&PATHS.friend_info)?;
     let mut peer_info_file = create_private_file(&PATHS.peer_info)?;
 
@@ -105,12 +105,10 @@ pub fn init() -> Result<()> {
         keypair,
     };
 
-    let contents = to_string(&user_info)?;
     let empty_friends = to_string(&Friends::default())?;
     let empty_peers = to_string(&Peers::default())?;
 
-    user_info_file.write_all(USER_INFO_HEADER.as_bytes())?;
-    user_info_file.write_all(contents.as_bytes())?;
+    write_user_info(&user_info)?;
 
     friend_info_file.write_all(FRIEND_INFO_HEADER.as_bytes())?;
     friend_info_file.write_all(empty_friends.as_bytes())?;

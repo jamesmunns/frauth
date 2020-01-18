@@ -4,7 +4,7 @@ use directories::ProjectDirs;
 use lazy_static::lazy_static;
 use structopt::StructOpt;
 
-use crate::subcmd::{friend::FriendOpts, publish::PublishOpts};
+use crate::subcmd::{friend::FriendOpts, me::MeOpts, publish::PublishOpts};
 
 pub mod consts;
 pub mod schema;
@@ -53,7 +53,7 @@ enum SubCommands {
     Init,
 
     /// Modify your own config
-    Me,
+    Me(MeOpts),
 
     /// Render a file that can be placed on a static website
     Publish(PublishOpts),
@@ -67,7 +67,7 @@ fn main() -> Result<()> {
 
     let ret = match opt {
         SubCommands::Init => subcmd::init::init(),
-        SubCommands::Me => subcmd::me::me(),
+        SubCommands::Me(opts) => subcmd::me::me(&opts),
         SubCommands::Publish(opts) => subcmd::publish::publish(&opts),
         SubCommands::Friend(opts) => subcmd::friend::friend(&opts),
     };
