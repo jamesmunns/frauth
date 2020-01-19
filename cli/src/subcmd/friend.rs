@@ -1,7 +1,7 @@
 use std::io::Write;
 
 use async_std::task;
-use base64::decode;
+use base64::{decode, encode};
 use chrono::Utc;
 use dialoguer::{Confirmation, Input};
 use ed25519_dalek::PublicKey;
@@ -13,7 +13,7 @@ use crate::{
     consts::FRIEND_INFO_HEADER,
     schema::{FriendInfo, Friends, PublishUserInfo},
     subcmd::publish::{HEADER_END_OF_FILE, HEADER_SIGNATURE, HEADER_TOP},
-    util::{create_private_file, load_friends},
+    util::{create_private_file, load_friends, load_user_info},
     {Error, Result, PATHS},
 };
 
@@ -108,6 +108,11 @@ fn add(url: &str, mut friends: Friends) -> Result<()> {
     let pubkey_maybe_str = Input::<String>::new()
         .with_prompt("Public Key")
         .interact()?;
+
+    if encode(load_user_info()?.keypair.public.as_bytes()) == pubkey_maybe_str {
+        eprintln!("\nYou cannot add your own identity as a friend!");
+        return Err(Error::from("Cannot be friends with yourself!"));
+    }
 
     println!("\nConfirming public key...");
 
