@@ -1,5 +1,5 @@
 use std::{
-    fs::{read_to_string, OpenOptions},
+    fs::OpenOptions,
     io::Write,
     path::PathBuf,
 };
@@ -7,12 +7,12 @@ use std::{
 use base64::encode;
 use chrono::Utc;
 use structopt::StructOpt;
-use toml::{from_str, to_string};
+use toml::to_string;
 
 use crate::{
     schema::{PublishFriend, PublishUserInfo, UserInfo},
-    util::load_friends,
-    Result, PATHS,
+    util::{load_user_info, load_friends},
+    Result,
 };
 
 pub const HEADER_TOP: &str = "FRAUTH-CONTENTS\n";
@@ -28,7 +28,7 @@ pub struct PublishOpts {
 }
 
 pub fn publish(opts: &PublishOpts) -> Result<()> {
-    let user_info = load_user_file()?;
+    let user_info = load_user_info()?;
     let contents = render_to_string(user_info)?;
 
     if let Some(ref path) = opts.output {
@@ -44,16 +44,6 @@ pub fn publish(opts: &PublishOpts) -> Result<()> {
     }
 
     Ok(())
-}
-
-fn load_user_file() -> Result<UserInfo> {
-    let contents = read_to_string(&PATHS.user_info)?;
-    from_str(&contents)
-        .map_err(|e| {
-            println!("{:?}", e);
-            e
-        })
-        .map_err(|_| "Failed to parse user info!".into())
 }
 
 fn render_to_string(mut user_info: UserInfo) -> Result<String> {
