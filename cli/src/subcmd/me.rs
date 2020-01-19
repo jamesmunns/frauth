@@ -22,6 +22,9 @@ pub enum StatusOpts {
         /// The new status
         status: String
     },
+
+    /// Clear your status
+    Clear,
 }
 
 pub fn me(subcmd: &MeOpts) -> Result<()> {
@@ -37,14 +40,17 @@ fn status(opts: &StatusOpts) -> Result<()> {
         StatusOpts::Get => {
             match user_info.status {
                 Some(status) => println!("{}", status),
-                None => println!("You haven't set a status yet!"),
+                None => println!("You haven't set a status!"),
             }
         },
         StatusOpts::Set { status } => {
             user_info.status = Some(status.clone());
-
             write_user_info(&user_info)?;
         },
+        StatusOpts::Clear => {
+            user_info.status = None;
+            write_user_info(&user_info)?;
+        }
     }
 
     Ok(())
