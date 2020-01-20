@@ -162,7 +162,7 @@ fn edit(opts: &EditOpts) -> Result<()> {
         },
     }
     write_user_info(&user_info)?;
-    println!("Updated configuration, don't forget to (re)publish me.frauth!");
+    println!("Updated configuration, don't forget to (re)publish with `frauth publish`!");
 
     Ok(())
 }
